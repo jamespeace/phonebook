@@ -1,0 +1,3 @@
+Height		Weight		Age
+175			70			23
+188			83			30

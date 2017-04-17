@@ -22,7 +22,13 @@ typedef struct __PHONE_BOOK_DETAIL {
     char zip[5];
 } details;
 
-entry *findName(char lastname[], entry *pHead);
-entry *append(char lastName[], entry *e);
+typedef struct __PHONE_BOOK_HASH_TABLE {
+	unsigned int tableSize; /* Number of the hash table */
+	entry **hashTable;	/* Ponter to hashTable */
+} hashTable;
 
+hashTable *createHashTable(int tableSize);
+int append_hash(char *line, hashTable *e);
+entry *findName_hash(char *line, hashTable *ht);
+unsigned int hash_func1(char *line, int tableSize);
 #endif

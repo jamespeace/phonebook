@@ -3,7 +3,6 @@
 #include <string.h>
 #include <time.h>
 #include <assert.h>
-
 #include IMPL
 
 #define DICT_FILE "./dictionary/words.txt"
@@ -36,12 +35,16 @@ int main(int argc, char *argv[])
         return -1;
     }
 
-    /* build the entry */
-    entry *pHead, *e;
+	/* create hash table */
+	int tableSize = 50021;
+	hashTable *ht = createHashTable(tableSize);
+
+    /* build the hash entry */
+    entry *pHead, *he;
     pHead = (entry *) malloc(sizeof(entry));
     printf("size of entry : %lu bytes\n", sizeof(entry));
-    e = pHead;
-    e->pNext = NULL;
+    he = pHead;
+    he->pNext = NULL;
 
 #if defined(__GNUC__)
     __builtin___clear_cache((char *) pHead, (char *) pHead + sizeof(entry));
@@ -52,7 +55,7 @@ int main(int argc, char *argv[])
             i++;
         line[i - 1] = '\0'; /* eliminate '\n' */
         i = 0;
-        e = append(line, e);
+        append_hash(line, ht);
     }
     clock_gettime(CLOCK_REALTIME, &end);
     cpu_time1 = diff_in_second(start, end);
@@ -62,41 +65,40 @@ int main(int argc, char *argv[])
 
     /* the givn last name to find */
     char input[MAX_LAST_NAME_SIZE] = "zyxel";
-    e = pHead;
 
-    assert(findName(input, e) &&
+    assert(findName_hash(input, ht) &&
            "Did you implement findName() in " IMPL "?");
-    assert(0 == strcmp(findName(input, e)->lastName, "zyxel"));
+    assert(0 == strcmp(findName_hash(input, ht)->lastName, "zyxel"));
 
 #if defined(__GNUC__)
     __builtin___clear_cache((char *) pHead, (char *) pHead + sizeof(entry));
 #endif
     /* compute the execution time */
     clock_gettime(CLOCK_REALTIME, &start);
-    findName(input, e);
+    findName_hash(input, ht);
     clock_gettime(CLOCK_REALTIME, &end);
     cpu_time2 = diff_in_second(start, end);
 
     FILE *output;
-#if defined(OPT)
-	output = fopen("opt.txt", "a");
-#else 
-	output = fopen("orig.txt", "a");
-#endif
+	output = fopen("hash.txt", "a");
 	fprintf(output, "append() findName() %lf %lf\n", cpu_time1, cpu_time2);
 	fclose(output);
 
     printf("execution time of append() : %lf sec\n", cpu_time1);
     printf("execution time of findName() : %lf sec\n", cpu_time2);
 
-	while (pHead->pNext) {
-		entry *p = pHead;
-		pHead = pHead->pNext;
-		free(p);
-		p = NULL;
+	/* free hash table */
+	for (i = 0; i < tableSize; i++) {
+		entry *ptr = ht->hashTable[i];
+		while (ptr) {
+			entry *q = ptr;
+			ptr = ptr->pNext;
+			free(q);
+		}
 	}
 	free(pHead);
-	pHead = NULL;
+	free(ht->hashTable);
+	free(ht);
 
     return 0;
 }

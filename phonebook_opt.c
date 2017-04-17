@@ -1,9 +1,11 @@
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 
 #include "phonebook_opt.h"
 
-/* original version */
+/* optimal version */
 entry *findName(char lastname[], entry *pHead)
 {
     while (pHead != NULL) {
@@ -24,4 +26,3 @@ entry *append(char lastName[], entry *e)
 
     return e;
 }
-
